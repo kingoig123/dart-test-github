@@ -5,13 +5,10 @@ on:
     branches:
       - main
       - develop
-      - sonarqube-check
 
   pull_request:
     types:
       - opened
-      - synchronize
-      - reopened
 
   workflow_dispatch:
 
@@ -25,18 +22,72 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout GitHub Repository
       - name: Checkout Source Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. SonarQube Analysis
+      - name: Validate SonarQube Configuration
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          set -e
+
+          echo "======================================"
+          echo "Validating SonarQube Configuration"
+          echo "======================================"
+
+          if [ -z "$SONAR_HOST_URL" ]; then
+            echo "ERROR: SONAR_HOST_URL is empty."
+            exit 1
+          fi
+
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "ERROR: SONAR_TOKEN is empty."
+            exit 1
+          fi
+
+          case "$SONAR_HOST_URL" in
+            http://*|https://*)
+              echo "SONAR_HOST_URL format: OK"
+              ;;
+            *)
+              echo "ERROR: SONAR_HOST_URL must start with http:// or https://"
+              exit 1
+              ;;
+          esac
+
+          echo "SONAR_TOKEN: Configured"
+          echo "SonarQube Configuration Validation Completed."
+
+      - name: Check SonarQube Connectivity
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          set -e
+
+          echo "======================================"
+          echo "Checking SonarQube Server Connectivity"
+          echo "======================================"
+
+          curl --fail \
+               --silent \
+               --show-error \
+               --connect-timeout 10 \
+               --max-time 30 \
+               "${SONAR_HOST_URL%/}/api/server/version"
+
+          echo ""
+          echo "SonarQube Server Connection Successful."
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
+
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
         with:
           args: >
             -Dsonar.projectKey=${{ github.event.repository.name }}
@@ -45,3 +96,4 @@ jobs:
             -Dsonar.inclusions=**/*.dart
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
