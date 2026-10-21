@@ -1,0 +1,47 @@
+name: Build and SonarQube Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - sonarqube-check
+
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonarqube:
+    name: Dart SonarQube Analysis
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout GitHub Repository
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. SonarQube Analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ github.event.repository.name }}
+            -Dsonar.projectName=${{ github.event.repository.name }}
+            -Dsonar.sources=.
+            -Dsonar.inclusions=**/*.dart
+            -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.qualitygate.wait=true
