@@ -1467,3 +1467,110 @@ class SecurityTestService {
 
   # Test123
 }
+
+// ============================================================
+// SonarQube Dart Code Quality Test
+// Intentionally problematic code for static analysis testing
+// ============================================================
+
+class SonarQubeTestService {
+
+  // TEST 01 - Unused Variable
+  void unusedVariableTest() {
+    int unusedValue = 100;
+    int result = 50;
+
+    print(result);
+  }
+
+  // TEST 02 - Unreachable Code
+  int unreachableCodeTest() {
+    return 100;
+
+    print("This code will never execute");
+  }
+
+  // TEST 03 - Duplicate Condition
+  String duplicateConditionTest(int value) {
+    if (value > 10) {
+      return "HIGH";
+    } else if (value > 10) {
+      return "MEDIUM";
+    } else {
+      return "LOW";
+    }
+  }
+
+  // TEST 04 - Empty Catch Block
+  void emptyCatchTest(String value) {
+    try {
+      int.parse(value);
+    } catch (e) {
+    }
+  }
+
+  // TEST 05 - Unnecessary Boolean Comparison
+  bool booleanComparisonTest(bool isActive) {
+    if (isActive == true) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // TEST 06 - Unnecessary Null Check
+  String nullCheckTest(String value) {
+    if (value == null) {
+      return "NULL";
+    }
+
+    return value;
+  }
+
+  // TEST 07 - Unused Parameter
+  void unusedParameterTest(String username, String password) {
+    print(username);
+  }
+
+  // TEST 08 - Duplicate Code
+  int calculatePriceA(int price) {
+    int tax = price * 10 ~/ 100;
+    int discount = price * 5 ~/ 100;
+    int shipping = 3000;
+
+    return price + tax - discount + shipping;
+  }
+
+  int calculatePriceB(int price) {
+    int tax = price * 10 ~/ 100;
+    int discount = price * 5 ~/ 100;
+    int shipping = 3000;
+
+    return price + tax - discount + shipping;
+  }
+
+  // TEST 09 - Hardcoded Password
+  final String adminPassword = "Admin1234!";
+
+  bool authenticate(String password) {
+    return password == adminPassword;
+  }
+
+  // TEST 10 - Sensitive Information Logging
+  void logCredentials(String username, String password) {
+    print("Username: $username");
+    print("Password: $password");
+  }
+
+  // TEST 11 - Insecure HTTP Endpoint
+  String getApiUrl() {
+    return "http://example.com/api/login";
+  }
+
+  // TEST 12 - Weak Random Number Generator
+  String generateToken() {
+    final random = Random();
+
+    return random.nextInt(999999).toString();
+  }
+}
